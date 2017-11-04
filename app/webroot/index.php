@@ -1,5 +1,4 @@
 <?php
-echo "123";
 /**
  * The Front Controller for handling every request
  *
