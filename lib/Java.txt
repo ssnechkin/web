@@ -1,0 +1,417 @@
+//=======================================
+	Интерфейсы и Абстрактные классы 
+//=======================================
+interface A {
+    int sum(int x, int y);
+}
+
+class B implements A{
+    public int diff(int x, int y){return x - y;}
+    public int sum(int x, int y){return x + y;}
+}
+
+class C extends B{
+    public int mult(int x, int y){return x * y;}
+    public int diff(int x, int y){return y - x + 5;}
+}
+
+class Test {
+	public static void main(String[] args) {
+		  A aB = new B();
+		  A aC = new C();
+		  B bB= new B();
+		  B bC= new C();
+		  C cC = new C();
+
+		  System.out.println(bC.mult(2,2)==4); 		// Ошибка компиляции
+		  System.out.println(bC.diff(1,2)); 		// 6
+		  System.out.println(bB.diff(1,2)==1);		// false
+		  System.out.println(aC.sum(1,1)==2);		// true
+		  System.out.println(aB.diff(1,1) == 0); 	// Ошибка компиляции
+	}
+}
+//=======================================
+
+
+
+
+
+//====================================
+	Generics
+//====================================
+Какие объекты можно создать?
+class A<T extends List<Number>>{}
+
+Варианты ответа:
+1.  A< List < Number >> a;
+2.  A< List <Long>> a;
+3.  A< LinkedList <Object>> a;
+4.  A< LinkedList <Long>> a;
+5.  A< ArrayList <Number>> a;
+
+public class Test<T extends List<Number>> {
+    public static void main(String... args) {
+        Test<List<Number>> t1;
+        Test<List<Long>> t2;		// Ошибка компиляции
+        Test<LinkedList<Object>> t3;	// Ошибка компиляции
+        Test<LinkedList<Long>> t4; 	// Ошибка компиляции
+        Test<ArrayList<Number>> t5;
+
+        List<Number> a;
+        List<Long> b = new ArrayList<Long>();
+
+        a = (List)b;
+
+        a.add(new BigDecimal(4));//нет исключения, но это плохо, т.к. с этого момента List<Long> содержит данные неправильного типа - BigDecimal. 
+        // Это происходит потому, что во время выполнения информация о типе, который должен храниться в List, теряется (в отличие от массива)
+        Long l = b.get(0);//exception!
+
+
+        Number[] aa = new Number[5];
+        Long[] bb = new Long[5];
+
+        aa = bb;
+
+        aa[0] = new BigDecimal(4);//exception! - это хорошо
+        Long ll = bb[0];
+    }
+}
+поэтому нельзя присваивать List<Long> к List<Number>
+//=======================================
+
+
+
+
+
+//=============================================================
+		Примитивные типы
+//=============================================================
+	-------------------------------------------------
+	|	bits	|	type	|	type	| 
+	-------------------------------------------------
+	|	8	|	byte	|	boolean	|
+	|	16	|	short	|	char	| 
+	|	32	|	int	|	float	| 
+	|	64	|	long	|	double	| 
+	-------------------------------------------------
+//=============================================================
+		Обёртки примитивных типов
+//=============================================================
+   Byte, Short, Character, Short, Integer, Float, Long, Double
+//=============================================================
+	StringBuilder str = new StringBuilder();	
+	str.append("text1").append("text2").append("text3");	
+	System.out.println(str.toString()); //"text1text2text3"
+//=============================================================
+
+
+
+
+
+//=============================================================
+		Лямбда-выражения
+//=============================================================
+	Collections.sort(name, 
+		(a, b) -> return b.compareTo(a);
+	);
+//-------------------------------------------------------------
+	Collections.sort(name, new Comparator<String>() {
+		public int compare(String a, String b) {
+			return b.compareTo(a);
+		}
+	});
+	Реализовать класс реализующий интерфейс Comparator
+//=============================================================
+
+
+
+
+//=============================================================
+	Аннотации 
+//=============================================================
+Это - метаданные о коде
+Содержат данные о программе не являясь частью программы
+Не влияют непосредственно на работу приложения
+Влияют только на ту функциональность, которая их обрабатывает
+Могут влиять на работу компилятора, инструментов и библиотек
+"Decorating" or "wrapping" классы в runtime
+Создать аннотацию:
+------------------
+ @interface CreatedBy {
+ 	String author();
+	String date();
+ }
+
+ @CreatedBy (author = "tully", date = "10.10.2014")
+ public class MyClass {
+ }
+ 
+ @CreatedBy (author = "tully", date = "10.10.2014")
+ public static void main(String[] args) {
+ }
+
+
+Обработка аннотаций в runtime
+-----------------------------
+ Class myClass = MyClass.class;
+ Method method = myClass.getMethod("main");
+
+ CreatedBy annotationC = MyClass.getAnnotation(CreatedBy.class);
+ CreatedBy annotationM = method.getAnnotation(CreatedBy.class);
+
+log.info("Author of the class: "  	+ annotationC.author());
+log.info("Date of Writhing the class: " + annotationC.date());
+log.info("Author of the method: "	+ annotationM.author());
+log.info("Date of Writhing the method: "+ annotationM.date());
+
+
+Виды аннотаций:
+---------------
+RetentionPolicy.SOURCE - аннотация присутсвует только в коде
+	Информация для компилятора
+	Информация для инструментов IDE
+
+RetentionPolicy.CLASS - сохранены в .class, но не доступны в runtime
+	Доступны при анализе byte-кода
+	Не доступны через reflection
+
+RetentionPolicy.RUNTIME - сохранены в .class, доступны в runtime
+	Аннотацию можно получить из getClass() через reflection
+
+
+Единые аннотации для ORM:
+---------------
+Java Persistence API
+ @Entity - объект класса можно "переложить" в таблицу
+ @Table  - связывает класс и таблицу
+ @id	 - поле является первичным ключом в таблице
+ @Column - связывает поле и колонку в таблице
+//=============================================================
+
+
+
+
+//=============================================================
+	Hibernate
+//=============================================================
+pom.xml
+    <dependencies>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.35</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${com.h2database.h2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>4.3.8.Final</version>
+        </dependency>
+    </dependencies>
+
+Настройки:
+------------------------
+Configuration configuration = new org.hibernate.cfg.Configuration();
+configuration.setProperty(propertyName, propertyValue);
+-----------------------------------------------------------------------------------------
+|propertyName				|	propertyValue				|
+-----------------------------------------------------------------------------------------
+|hibernate.dialect			|	org.hibernate.dialect.MySQLDialect	| как именно работать с БД
+|hibernate.connection.driver_class	|	com.mysql.jdbc.Driver			|
+|hibernate.connection.url		|	jdbc:mysql://localhost:3306/db_exemple	|
+|hibernate.connection.user		|	tully					|
+|hibernate.connection.password		|	tully					|
+|hibernate.show sql			|	true					| параметр для отладки. В логах записывает SQL-запросы
+|hibernate.hbm2ddl.auto			|	update					| описание ниже
+-----------------------------------------------------------------------------------------
+hibernate.hbm2ddl.auto:
+ - validate:	проверяет схему, не внося изменений
+ - update: 	обновляет схему, если находит различия
+ - create: 	пересоздаёт схему
+ - create-drop:	уничтожает схему при закрытии SessionFactory
+	
+
+Инициализаця:
+-------------
+ StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
+ builder.applySettings(configuration.getProperties());
+ ServiceRegistry serviceRegistry = builder.buildServiceRegistry();
+
+ ServiceFactory sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+
+ Session session = sessionFactory.openSession();
+ Transaction transaction = session.beginTransaction();
+ 
+ System.out.println(transaction.getLocalStatus().toString());
+ /*Запросы для работы с данными в БД*/
+
+ session.close();
+ sessionFactory.close();
+
+Класс для работы с БД - размеченный аннотациями:
+------------------------------------------------
+import javax.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class UserDataSet {
+	@id
+	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private long id;
+
+	@column(name = "name")
+	private String name;
+}
+
+Перед созданием SessionFactory:
+ configuration.addAnnotatedClass(UserDataSet.class);
+
+//=============================================================
+
+
+
+
+//=============================================================
+	Паттерны. Singleton
+//=============================================================
+	Это класс экземпляр которого создаётся только один раз
+
+class Singleton{
+	private static Singleton singleton;
+	private void Singlton() {
+	}
+	public static Singleton instance() {
+		if(singleton == null) {
+			singleton = new Singleton();
+		}
+		return singleton;
+	}
+
+	/*доп поля - замена статическим полям*/
+	private String value;
+	public void setValue(String newValue) {
+		value = newValue;
+	}
+	public String getValue() {
+		return value;
+	}
+}
+
+	
+// Использование в коде
+	Singleton singleton = Singleton.instance();
+	singleton.setValue("text");
+	System.out.println(singleton.getValue());
+
+
+// Второй вариант. (Лучше использовать его) Может привести к проблемам производительности на мультипроцессорных системах.
+class Singleton {
+	private static volatile Singleton instance; //volatile - если его не использовать то все поля должны быть final
+	private void Singleton() {
+	}
+	public static Singleton instance() {
+		if(instance == null) {
+			synchronized (Singleton.class) {
+				if(instance == null) {
+					instance = new Singleton();
+				}
+			}
+		}
+		return instance;
+	}
+
+	/*доп поля - замена статическим полям*/
+	private String value;
+	public void setValue(String newValue) {
+		value = newValue;
+	}
+	public String getValue() {
+		return value;
+	}
+}
+
+// Использование в коде
+	Singleton singleton = Singleton.instance();
+	singleton.setValue("text");
+	System.out.println(singleton.getValue());
+
+
+
+//Вызов инициализации по требованию
+-----------------------------------
+public class Something {
+    private Something() {}
+
+    private static class LazyHolder {
+        private static final Something INSTANCE = new Something();
+    }
+
+    public static Something getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+}
+//=============================================================
+
+
+
+
+//=============================================================
+	Генерация классов
+//=============================================================
+public static void generateTestRun() throws IOException, ClassNotFoundException, InstantiationException,
+    	IllegalAccessException {
+		String fileName = "GenerateTestRun.java";
+		String className = "GenerateTestRun.class";
+		File[] f = new File[] { new File(fileName), new File(className) };
+		for (File file : f)
+		    file.delete();
+		
+		BufferedWriter fos = new BufferedWriter(new FileWriter(fileName));
+		//fos.write("public class GenerateTestRun {String jsonPathFile = \"\";String JSONDatePath = \"src\" + File.separator + \"test\" + File.separator + \"resources\" + File.separator + \"jsonDate\" + File.separator;@BeforeClass private static void beforeClass() {System.setProperty(\"webdriver.chrome.driver\", \"src\" + File.separator + \"test\" + File.separator + \"resources\" + File.separator + \"web_drivers\" + File.separator + \"chromedriver.exe\");System.setProperty(\"selenide.browser\", \"Chrome\");}@Test public void test() {System.out.println(\"testtest1239990000\");}}");
+		fos.write("import hpsmTests.Incidents.LifeCycleIncident; import org.testng.annotations.BeforeClass; import org.testng.annotations.Test; public class GenerateTestRun { public String toString() { return \"MyClass running\"; } @BeforeClass private static void beforeClass() {System.setProperty(\"webdriver.chrome.driver\", \"chromedriver.exe\");System.setProperty(\"selenide.browser\", \"Chrome\");} @Test public void testRun() { new LifeCycleIncident(\"Default.json\"); } }");
+		fos.flush();
+		fos.close();
+		
+		JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+		StandardJavaFileManager fileManager = javac.getStandardFileManager(null, null, null);
+		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+		Iterable<? extends JavaFileObject> compilationUnits1 = fileManager.getJavaFileObjectsFromFiles(Arrays
+		        .asList(new File[] { new File(fileName) }));
+		javac.getTask(null, fileManager, diagnostics, null, null, compilationUnits1).call();
+		for (Diagnostic diagnostic : diagnostics.getDiagnostics())
+		    System.out.println(diagnostic);
+		fileManager.close();
+		MyClassLoader loader = new MyClassLoader();
+
+		Class my = loader.getClassFromFile(new File(className));
+		Object o = my.newInstance();
+		System.out.println(o.toString());
+	}
+
+	static class MyClassLoader extends ClassLoader {
+	
+		public Class getClassFromFile(File f) {
+		    byte[] raw = new byte[(int) f.length()];
+		    //System.out.println(f.length());
+		    InputStream in = null;
+		    try {
+		        in = new FileInputStream(f);
+		        in.read(raw);
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		    try {
+		        if (in != null)
+		            in.close();
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
+		    return defineClass(null, raw, 0, raw.length);
+		}
+	}
+//=============================================================
